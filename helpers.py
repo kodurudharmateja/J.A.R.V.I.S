@@ -38,22 +38,47 @@ def joke() -> None:
 import speech_recognition as sr
 
 MIC_INDEX = 1 # <-- set this to the working mic index from the test (2 in your case)
-
 def takeCommand():
     r = sr.Recognizer()
 
-    try:
-        with sr.Microphone() as source:   # ❗ REMOVE device_index for now
-            print("Listening...")
-            r.pause_threshold = 0.8
+    r.pause_threshold = 0.8
+    r.energy_threshold = 300
+    r.dynamic_energy_threshold = True
 
-            audio = r.listen(source, timeout=5, phrase_time_limit=5)
+    try:
+        with sr.Microphone() as source:
+            print("Listening...")
+
+            # Quickly adjust to background noise
+            r.adjust_for_ambient_noise(source, duration=0.5)
+
+            audio = r.listen(
+                source,
+                timeout=8,
+                phrase_time_limit=6
+            )
 
         print("Recognizing...")
-        query = r.recognize_google(audio, language='en-in')
-        print("You said:", query)
 
+        query = r.recognize_google(
+            audio,
+            language='en-IN'
+        )
+
+        print("You said:", query)
         return query.lower()
+
+    except sr.WaitTimeoutError:
+        print("No speech detected.")
+        return "none"
+
+    except sr.UnknownValueError:
+        print("Could not understand audio.")
+        return "none"
+
+    except sr.RequestError as e:
+        print("Speech recognition service error:", e)
+        return "none"
 
     except Exception as e:
         print("Recognition Error:", e)

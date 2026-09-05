@@ -11,14 +11,14 @@ from openai import OpenAI
 import os
 import sys
 import smtplib
-from huggingface_hub import InferenceClient
+# from huggingface_hub import InferenceClient
 from gtts import gTTS
 from playsound import playsound
 import requests
 import os
 from helpers import *
 from youtube import youtube
-import google.generativeai as genai
+# import google.generativeai as genai
 from sys import platform
 
 # ------------------ ENGINE SETUP ------------------
@@ -30,44 +30,53 @@ engine.setProperty('rate', 150)           # speaking speed
 
 
 
-genai.configure(api_key="AIzaSyCl_amqoAWgHB51P9SC6GVqAYRp_NNlcNQ")
+# genai.configure(api_key="AIzaSyCl_amqoAWgHB51P9SC6GVqAYRp_NNlcNQ")
 
-model = genai.GenerativeModel("gemini-pro")
+# model = genai.GenerativeModel("gemini-pro")
 
 
-def ask_brain(question):
-    try:
-        response = model.generate_content(question)
-        return response.text
-    except Exception as e:
-        print("Gemini Error:", e)
-        return "Sorry sir, my brain is not working right now."
+# def ask_brain(question):
+#     try:
+#         response = model.generate_content(question)
+#         return response.text
+#     except Exception as e:
+#         print("Gemini Error:", e)
+#         return "Sorry sir, my brain is not working right now."
     
-client = InferenceClient(model="mistralai/Mistral-7B-Instruct-v0.2")
+# client = InferenceClient(model="mistralai/Mistral-7B-Instruct-v0.2")
 
-def ask_brain(query):
-    response = client.text_generation(query, max_new_tokens=100)
-    return response
+# def ask_brain(query):
+#     response = client.text_generation(query, max_new_tokens=100)
+#     return response
 
 
 
 def ask_brain(query):
     response = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": "llama3", "prompt": query}
+        json={
+            "model": "qwen3:8b",
+            "prompt": query,
+            "stream": False
+        }
     )
     return response.json()["response"]
 
 
 
 
+# def speak(text):
+#     print("JARVIS:", text)
+#     tts = gTTS(text=text, lang='en')
+#     filename = "voice.mp3"
+#     tts.save(filename)
+#     playsound(filename)
+#     os.remove(filename)
+
 def speak(text):
     print("JARVIS:", text)
-    tts = gTTS(text=text, lang='en')
-    filename = "voice.mp3"
-    tts.save(filename)
-    playsound(filename)
-    os.remove(filename)
+    engine.say(text)
+    engine.runAndWait()
 
 
 
@@ -116,7 +125,7 @@ class Jarvis:
         # Open YouTube
         elif 'open youtube' in query:
             speak("Opening YouTube, sir.")
-            webbrowser.get('chrome').open_new_tab("https://youtube.com")
+            webbrowser.open_new_tab("https://youtube.com")
             speak("YouTube is ready for you.")
             speak("Anything else, sir?")
             return True
